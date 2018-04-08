@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="google-site-verification" content="cM_VWDa2ALBhAiVFmXNORa2AGkYLRqxiHYkZPYtLIQ4" />
+  <meta name="google-site-verification" content="gxsq8sLFtLcb1M1mZGSxARfBACIaFQMvdlF5hHsjBPo" />
+  <meta name="baidu-site-verification" content="G7AVOULiH8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" >
+  <title>【iOS开发】静态库导致的运行时崩溃问题 | zzyspace</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="使用其他一些第三方静态库时, 如果没有注意按照文档中的提示进行配置, 很容易在程序运行过程中因 “unrecorgnized selector send to instance xxx” 的异常而崩溃. 而且可以发现, 导致崩溃的方法都是Category中的方法.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【iOS开发】静态库导致的运行时崩溃问题">
+<meta property="og:url" content="http://zzyspace.github.io/2015/10/18/crash-with-static-library/index.html">
+<meta property="og:site_name" content="zzyspace">
+<meta property="og:description" content="使用其他一些第三方静态库时, 如果没有注意按照文档中的提示进行配置, 很容易在程序运行过程中因 “unrecorgnized selector send to instance xxx” 的异常而崩溃. 而且可以发现, 导致崩溃的方法都是Category中的方法.">
+<meta property="og:updated_time" content="2018-04-08T14:50:20.448Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="【iOS开发】静态库导致的运行时崩溃问题">
+<meta name="twitter:description" content="使用其他一些第三方静态库时, 如果没有注意按照文档中的提示进行配置, 很容易在程序运行过程中因 “unrecorgnized selector send to instance xxx” 的异常而崩溃. 而且可以发现, 导致崩溃的方法都是Category中的方法.">
+  
+    <link rel="alternative" href="/atom.xml" title="zzyspace" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?3491e492e5f2fad934fd152baa7abcdd";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+</head>
+
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="/img/avatar.jpg" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">zzy</a></h1>
+		</hgroup>
+
+		
+		<p class="header-subtitle">iOS Developer</p>
+		
+
+		
+			<div class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						<li>分类</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">首页</a></li>
+				        
+							<li><a href="/archives">所有文章</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<div class="social">
+							
+								<a class="github" target="_blank" href="https://github.com/zzyspace" title="github">github</a>
+					        
+								<a class="weibo" target="_blank" href="http://weibo.com/u/2008464051" title="weibo">weibo</a>
+					        
+								<a class="facebook" target="_blank" href="https://www.facebook.com/profile.php?id=100009454526965" title="facebook">facebook</a>
+					        
+						</div>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/Apple-Pay/" style="font-size: 10px;">Apple Pay</a> <a href="/tags/Linux/" style="font-size: 10px;">Linux</a> <a href="/tags/Other-Linker-Flags/" style="font-size: 10px;">Other Linker Flags</a> <a href="/tags/UI/" style="font-size: 10px;">UI</a> <a href="/tags/UIAlertController/" style="font-size: 10px;">UIAlertController</a> <a href="/tags/UIAlertView/" style="font-size: 10px;">UIAlertView</a> <a href="/tags/Xcode/" style="font-size: 10px;">Xcode</a> <a href="/tags/bundle/" style="font-size: 10px;">bundle</a> <a href="/tags/dns/" style="font-size: 10px;">dns</a> <a href="/tags/jailbreak/" style="font-size: 10px;">jailbreak</a> <a href="/tags/localization/" style="font-size: 10px;">localization</a> <a href="/tags/runtime/" style="font-size: 20px;">runtime</a>
+					</div>
+				</section>
+				
+				
+				<section class="switch-part switch-part3">
+
+  					<div class="widget tagcloud" id="js-list_categories">
+  						<ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/iOS-Tips/">iOS Tips</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/iOS开发/">iOS开发</a></li></ul>
+  					</div>
+  				</section>
+  		
+  				
+  				
+
+				
+				
+				<section class="switch-part switch-part4">
+  				
+					<div id="js-aboutme">不会摄影的iOS开发者不是好吉他手</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide">zzy</h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<div class="profilepic">
+			
+				<img lazy-src="/img/avatar.jpg" class="js-avatar">
+			
+			</div>
+			<hgroup>
+			  <h1 class="header-author">zzy</h1>
+			</hgroup>
+			
+			<p class="header-subtitle">iOS Developer</p>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">首页</a></li>
+		        
+					<li><a href="/archives">所有文章</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+				<div class="social">
+					
+						<a class="github" target="_blank" href="https://github.com/zzyspace" title="github">github</a>
+			        
+						<a class="weibo" target="_blank" href="http://weibo.com/u/2008464051" title="weibo">weibo</a>
+			        
+						<a class="facebook" target="_blank" href="https://www.facebook.com/profile.php?id=100009454526965" title="facebook">facebook</a>
+			        
+				</div>
+			</nav>
+		</header>				
+	</div>
+</nav>
+
+      <div class="body-wrap"><article id="post-crash-with-static-library" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2015/10/18/crash-with-static-library/" class="article-date">
+  	<time datetime="2015-10-18T12:45:33.000Z" itemprop="datePublished">2015-10-18</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      【iOS开发】静态库导致的运行时崩溃问题
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Other-Linker-Flags/">Other Linker Flags</a></li></ul>
+	</div>
+
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/iOS开发/">iOS开发</a>
+	</div>
+
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>使用其他一些第三方静态库时, 如果没有注意按照文档中的提示进行配置, 很容易在程序运行过程中因 “unrecorgnized selector send to instance xxx” 的异常而崩溃. 而且可以发现, 导致崩溃的方法都是Category中的方法. </p>
+<a id="more"></a>
+<p>在<a href="https://developer.apple.com/library/mac/qa/qa1490/_index.html" target="_blank" rel="external">苹果官方文档</a>中解释到: </p>
+<blockquote>
+<p>The dynamic nature of Objective-C complicates things slightly. Because the code that implements a method is not determined until the method is actually called, Objective-C does not define linker symbols for methods. Linker symbols are only defined for classes.<br>Since categories are a collection of methods, using a category’s method does not generate an undefined symbol. This means the linker does not know to load an object file defining the category, if the class itself is already defined. This causes the same “selector not recognized” runtime exception you would see for any unimplemented method.</p>
+</blockquote>
+<p>翻译过来, 就是因为Objective-C的动态特性使得方法是在运行时才确定的, 所以链接的时候不会为方法(Method)定义连接符号, 而是为类(Class)定义连接符号. 这样当在一个静态库中使用类别来扩展已有类的时候，链接器不知道如何把类原有的方法和类别中的方法整合起来, 所以就导致运行的时候Category的方法无法被找到抛出异常.</p>
+<h1 id="解决方法-Other-Linker-Flags"><a href="#解决方法-Other-Linker-Flags" class="headerlink" title="解决方法: Other Linker Flags"></a>解决方法: Other Linker Flags</h1><hr>
+<ul>
+<li><h3 id="ObjC"><a href="#ObjC" class="headerlink" title="-ObjC"></a>-ObjC</h3></li>
+</ul>
+<p><a href="https://developer.apple.com/library/mac/qa/qa1490/_index.html" target="_blank" rel="external">苹果官方文档</a>对这个flag的解释是这样的:</p>
+<blockquote>
+<p>Passing the -ObjC option to the linker causes it to load all members of static libraries that implement any Objective-C class or category. This will pickup any category method implementations. But it can make the resulting executable larger, and may pickup unnecessary objects. For this reason it is not on by default.</p>
+</blockquote>
+<p>  <code>-ObjC</code>这个标志选项会让链接器加载静态库所有的Objective-C的类和Category, 这样就能把Category中实现的方法整合起来. 但是由于这样做会使可执行文件变大, 也会整合一些用不到的对象, 所以才没有默认使用-ObjC标志, 而是需要我们手动添加.</p>
+<ul>
+<li><h3 id="all-load"><a href="#all-load" class="headerlink" title="-all_load"></a>-all_load</h3></li>
+</ul>
+<p>加载所有静态库中的文件. 相比<code>-ObjC</code>, 不同点就是<code>-all_load</code>会将所有的(包括非Objective-C)文件都整合到静态库中.<br><em><strong>*注意</strong> : 假如你使用了不止一个静态库，然后又使用了这个参数，那么你很有可能会遇到<code>duplicate symbol</code>错误，因为不同的库文件里面可能会有相同的目标文件.</em></p>
+<ul>
+<li><h3 id="force-load-path-to-archive"><a href="#force-load-path-to-archive" class="headerlink" title="-force_load (path_to_archive)"></a>-force_load (path_to_archive)</h3></li>
+</ul>
+<p>加载指定路径的静态库. 相比<code>-all_load</code>, 不同点就是<code>-force_load</code>只是完全加载了一个库文件，不影响其余库文件的按需加载.</p>
+<h1 id="补充"><a href="#补充" class="headerlink" title="补充:"></a>补充:</h1><hr>
+<p>使用<code>-all_load</code>或者<code>-force_load</code>大部分原因是因为<strong>Xcode4.2之前</strong>的版本的链接器的bug, 在64位iOS应用环境下当静态库中只有分类而没有类的时候, <code>-ObjC</code>参数就会失效了. 所以为了兼容<strong>Xcode4.2之前</strong>的版本, 有两种解决方法:</p>
+<ul>
+<li><h3 id="静态库使用者"><a href="#静态库使用者" class="headerlink" title="静态库使用者:"></a>静态库使用者:</h3></li>
+</ul>
+<p>使用<code>-all_load</code>或者<code>-force_load</code>代替<code>-ObjC</code>.</p>
+<ul>
+<li><h3 id="静态库开发者"><a href="#静态库开发者" class="headerlink" title="静态库开发者:"></a>静态库开发者:</h3></li>
+</ul>
+<p>可以通过在分类中添加一个类的声明和实现, 使得Category源文件中不仅仅只有分类, 同时还有类存在来避免链接器的bug, 从而避免了<code>-ObjC</code>标志失效的麻烦:</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span><br><span class="line"> *   NSObject+Addition.m</span><br><span class="line"> */</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// add a dummy class</span></span><br><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">DUMMY_CLASS_NSObject_Addition</span> : <span class="title">NSObject</span></span></span><br><span class="line"><span class="keyword">@end</span></span><br><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">DUMMY_CLASS_NSObject_Addition</span></span></span><br><span class="line"><span class="keyword">@end</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">NSObject</span> (<span class="title">Addition</span>)</span></span><br><span class="line"><span class="comment">// some category methods...</span></span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+<p>但是<strong>Xcode4.2之后</strong>, 只要使用<code>-ObjC</code>即可. 具体可以参看stackoverflow的<a href="http://stackoverflow.com/questions/2567498/objective-c-categories-in-static-library/2615407#2615407" target="_blank" rel="external">这个回答</a>.</p>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2016/01/25/associated-objects/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption"><</strong>
+      <div class="article-nav-title">
+        
+          【iOS开发】Associated Objects-为分类添加属性
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2015/10/12/frequently-used-terminal-command/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">【Linux】常用命令行</div>
+      <strong class="article-nav-caption">></strong>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+<div class="share_jia" style="padding-left:4%">
+	<!-- JiaThis Button BEGIN -->
+	<div class="jiathis_style">
+		<span class="jiathis_txt">分享到: &nbsp; </span>
+		<a class="jiathis_button_facebook"></a> 
+    <a class="jiathis_button_twitter"></a>
+    <a class="jiathis_button_plus"></a> 
+    <a class="jiathis_button_tsina"></a>
+		<a class="jiathis_button_cqq"></a>
+		<a class="jiathis_button_douban"></a>
+		<a class="jiathis_button_weixin"></a>
+		<a class="jiathis_button_tumblr"></a>
+    <a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jtico jtico_jiathis" target="_blank"></a>
+	</div>
+	<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js?uid=1405949716054953" charset="utf-8"></script>
+	<!-- JiaThis Button END -->
+</div>
+
+
+
+
+
+
+<div class="duoshuo">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="crash-with-static-library" data-title="【iOS开发】静态库导致的运行时崩溃问题" data-url="http://zzyspace.github.io/2015/10/18/crash-with-static-library/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"zzyspace"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+    	<div class="footer-left">
+    		&copy; 2018 zzy
+    	</div>
+      	<div class="footer-right">
+      		<a href="http://hexo.io/" target="_blank">Hexo</a>  Theme <a href="https://github.com/litten/hexo-theme-yilia" target="_blank">Yilia</a> by Litten
+      	</div>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
+
+
+<script>
+	var yiliaConfig = {
+		fancybox: true,
+		mathjax: true,
+		animate: true,
+		isHome: false,
+		isPost: true,
+		isArchive: false,
+		isTag: false,
+		isCategory: false,
+		open_in_new: false
+	}
+</script>
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js" type="text/javascript"></script>
+<script src="/js/main.js" type="text/javascript"></script>
+
+
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+  </div>
+</body>
+</html>
